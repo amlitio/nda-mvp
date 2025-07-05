@@ -1,33 +1,49 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
-import jwt from 'jsonwebtoken';
-import { sendEmail } from '../../lib/mail';
-import formidable from 'formidable';
+import { useState } from 'react';
 
-const STORAGE_PATH = process.env.STORAGE_PATH || './storage';
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+export default function Home() {
+  const [file, setFile] = useState<File | null>(null);
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
 
-export const config = { api: { bodyParser: false } };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!file || !email) return;
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).end();
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('email', email);
 
-  const form = new formidable.IncomingForm({ keepExtensions: true });
+    const res = await fetch('/api/send', {
+      method: 'POST',
+      body: formData,
+    });
 
-  form.parse(req, async (err, fields, files) => {
-    if (err) return res.status(500).json({ error: 'Form parsing error' });
+    const data = await res.json();
+    setMessage(data.message || 'NDA sent!');
+  };
 
-    const email = fields.email as string;
-    const file = files.file as formidable.File;
-
-    if (!email || !file) return res.status(400).json({ error: 'Missing email or file' });
-
-    const fileId = uuidv4();
-    const savedPath = path.join(STORAGE_PATH, `${fileId}.pdf`);
-    fs.copyFileSync(file.filepath, savedPath);
-
-    const token = jwt.sign({ fileId, email }, JWT_SECRET, { expiresIn: '48h' });
-    const sign
+  return (
+    <div style={{ padding: '2rem' }}>
+      <h1>Send NDA</h1>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="email"
+          placeholder="Recipient's Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <br /><br />
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+          required
+        />
+        <br /><br />
+        <button type="submit">Send NDA</button>
+      </form>
+      <p>{message}</p>
+    </div>
+  );
+}
