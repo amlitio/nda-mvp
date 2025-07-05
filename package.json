@@ -1,0 +1,23 @@
+{
+  "name": "nda-mvp",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@sendgrid/mail": "^7.7.0",
+    "formidable": "^3.5.2",
+    "jsonwebtoken": "^9.0.0",
+    "next": "13.4.19",
+    "pdf-lib": "^1.17.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-signature-canvas": "^1.0.5",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  }
+}
